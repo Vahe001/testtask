@@ -8,33 +8,39 @@ const PhotosRouter = express.Router();
 const PhotosService = require('./service');
 const AppConstants = require("./../../settings/constants")
 const Utility = require('./../../services/utility');
-const base64 = require("./../authorization/photo_service");
 const auth = require('./../authorization/user_service');
 
 // Read operation
 PhotosRouter.get('/:id', auth._auth('user'), (req, res) => {
+    photo = {
+        _id: req.query.id
+    }
+    PhotosService.getPhotos(photo).then(data =>{
+            var img = fs.readFileSync(data[0].image);
+             res.writeHead(200, {'Content-Type': data[0].content_type });
+            res.end(img, 'binary');
+    });
+});
+PhotosRouter.get('/getlist/:id', auth._auth('user'), (req, res) => {
 
     PhotosService.getPhotos().then(data =>{
-        let arr = [];
-        for(let i=0; i < data.length; ++i){
-                arr[i] = data[i].image;
+        var arr = [];
+        for(let i = 0; i < data.length; ++i){
+            arr[i] = data[i].image;
         }
-        res.set('Content-Type', 'image/jpeg');
-        res.send(arr[3]);
+        return res.send(arr)
     });
 });
 
 //Create operation
 PhotosRouter.post('/:id', upload.single('avatar'), (req, res) => {
-    console.log(req.file)
     if (!req.file) {
         return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.NO_FILE));
     }
     if (!AppConstants.PHOTOS_TYPE.test(req.file.originalname)) {
         return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.NO_PHOTOS_TYPE))
     }
-    let img = fs.readFileSync(req.file.path, 'Binary')
-    console.log("path = ", req.file.path)
+
     let photo = {
           originalname: req.file.originalname,
           author: req.params.id,
@@ -54,6 +60,35 @@ PhotosRouter.post('/:id', upload.single('avatar'), (req, res) => {
     });
 
 });
+
+PhotosRouter.put('/:id', upload.single('avatar'), (req, res) => {
+    var photo = {}
+    if (req.file) {
+        if (!AppConstants.PHOTOS_TYPE.test(req.file.originalname)) {
+            return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.NO_PHOTOS_TYPE))
+        }
+        var photo = {
+            originalname: req.file.originalname,
+            author: req.params.id,
+            content_type: req.file.mimetype,
+            size: req.file.size,
+            image: req.file.path
+        }
+    }
+        if(req.body.title)
+            photo.title = req.body.title;
+        if(req.body.x && req.body.y)
+            photo.location = {
+            x: req.body.x,
+            y: req.body.y
+        }
+
+    PhotosService.updatePhotos(req.query.id, photo).then(data => {
+        return res.send(data);
+    });
+
+});
+
 
 
 //Delete operation

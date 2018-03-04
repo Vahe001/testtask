@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const UsersApi = require('./../components/users/api');
 const PhotosApi = require('./../components/photos/api');
 const con = require('./../components/core/db_connection')
@@ -13,11 +14,10 @@ class ApiV1 {
         return res.send("Welcome")
         });
         app.get('/login', (req,res) =>{
-            if( !req.query.username || req.query.password)
-            {
+            if( !req.query.username || !req.query.password){
                 return res.send("Username or password is incorect.")
             }
-            user = {
+            let user = {
                 username: req.query.username,
                 password: req.query.password
             }
@@ -29,6 +29,7 @@ class ApiV1 {
                 if(!user){
                     return res.send("You entered an incorrect username or password.")
                 }
+
                 res.send(user);
             })
 

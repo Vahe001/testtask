@@ -46,6 +46,20 @@ class PhotosService {
         });
     });
   }
+  updatePhotos(id, user) {
+
+         return new Promise((resolve, reject) => {
+          PhotosDao.updateData(id, user).then(data => {
+              resolve(data);
+          }).catch(err => {
+             reject(Utility.generateErrorMessage(
+               Utility.ErrorTypes.USER_UPDATE_ERROR)
+              );
+          });
+      });
+  }
+
+
 }
 
 
