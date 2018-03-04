@@ -21,16 +21,6 @@ PhotosRouter.get('/:id', auth._auth('user'), (req, res) => {
             res.end(img, 'binary');
     });
 });
-PhotosRouter.get('/getlist/:id', auth._auth('user'), (req, res) => {
-
-    PhotosService.getPhotos().then(data =>{
-        var arr = [];
-        for(let i = 0; i < data.length; ++i){
-            arr[i] = data[i].image;
-        }
-        return res.send(arr)
-    });
-});
 
 //Create operation
 PhotosRouter.post('/:id', upload.single('avatar'), (req, res) => {
